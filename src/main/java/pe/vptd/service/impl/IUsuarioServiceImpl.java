@@ -92,9 +92,47 @@ public class IUsuarioServiceImpl implements IUsuarioService {
 	}
 
 	@Override
-	public ResponseEntity<Map<String, Object>> actualizarUsuario(Usuario user, int id) {
-		// TODO Auto-generated method stub
-		return null;
+	public ResponseEntity<Map<String, Object>> actualizarUsuario(Usuario usuario, int id) {
+		Map<String, Object> res = new HashMap<>();
+		Usuario u = usuarioRepo.findById(id).get();
+		String contrasenaEncriptado = passwordEncoder.encode(usuario.getContrasena());
+		if(u==null) {
+			res.put("mensaje", "no se encontro el usuario");
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+		}else {
+			u.setNombre(usuario.getNombre());
+			u.setApellido(usuario.getApellido());
+			u.setEmail(usuario.getEmail());
+			u.setContrasena(contrasenaEncriptado);
+			u.setTelefono(usuario.getTelefono());
+			u.setEstado(Estado.ACTIVO);
+			u.setFecha_modificacion(LocalDateTime.now());
+			
+			usuarioRepo.save(u);
+			res.put("mensaje", "Usuario Actualizado");
+			res.put("status",HttpStatus.OK);
+			res.put("usuario", u);
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
+	}
+
+	@Override
+	public ResponseEntity<Map<String, Object>> eliminarUsuario( int id) {
+		Map<String, Object> res = new HashMap<>();
+		Usuario u = usuarioRepo.findById(id).get();
+		if(u==null) {
+			res.put("mensaje", "no se encontro el usuario");
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+		}else {
+			u.setEstado(Estado.ELIMINADO);
+			u.setFecha_modificacion(LocalDateTime.now());
+			
+			usuarioRepo.save(u);
+			res.put("mensaje", "Usuario Eliminado");
+			res.put("status",HttpStatus.OK);
+			res.put("usuario", u);
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
 	}
 
 }
